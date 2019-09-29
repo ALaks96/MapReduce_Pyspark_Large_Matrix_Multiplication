@@ -1,0 +1,121 @@
+## IF YOU RUN IN SPARK:
+
+#Get the data:
+data = sc.textFile("file:////Users/laks/Desktop/Polytechnique/Cours/Database Management II (MAP543)/Project/Database-Management-Project-Big-Matrix-Multiplication/Augustin/matrix2_nsp.txt")
+
+# Strip and split all elements in the data:
+pairs = data.map(lambda x: x.strip().split(','))
+
+# Same map scheme as in previous mapper, remember to reset the number in the for loops depending on the size of the matrix taken!:
+def mapper(x):
+    map = []
+    if x[0] == "A":
+        for i in range(4):
+            key = "A" + str(i)
+            if x[1] == str(i):
+                map.append([(key,x[2]),x[3]])
+    else:
+        for i in range(4):
+            key = "B" + str(i)
+            if x[2] == str(i):
+                map.append([(key,x[1]),x[3]])
+    return(map)
+
+# Apply map function on all pairs:
+pairs2 = pairs.flatMap(lambda x: mapper(x))
+
+# Now we want to recover our two lists A and B in the order we explained previously, first we need to sort to be sure that we have elements of matrix A in order of left to right (row wise) and elements of B from up to down (column wise)
+pairs3 = pairs2.sortByKey().map(lambda x: [x[0][0][0], x[1]])
+
+# Now that they are sorted we only need their provenance and their value (either A or B) thus we group by to be able to slice afterwards:
+lists = pairs3.groupByKey()
+
+# We need to go through another map procedure in order to be able to apply our slicing procedure, again pay attention to the range of the for loops which depend on the size of the matrices:
+import numpy as np
+def mapper2(x,y):
+    for i in range(0,4):
+        for j in range(0,4):
+            C_A = np.array(x[length*i : length*(i+1)])
+            C_B = np.array(y[width*j : width*(j+1)])
+            C_temp = C_A * C_B
+
+# Unfortunately we weren't able to go through this procedure, our idea was to apply the as a map and do the product of elements of A and B and list them with a corresponding key,value pair. Then we would have just applied a .reduce(lambda x: sum(x)) to get our values.
+
+
+
+
+# Summing the product to yield element i,j of C!
+C = np.sum(C_temp)
+print '%s\t%s' % ((i,j),C)
+
+
+
+# TRIES :
+
+
+
+def mapper2(x):
+    A_list = [0]*(3*3)
+    B_list = [0]*(3*3)
+    for i in range(0,4):
+        matrc = x[0][0]
+        cr = int(x[0][1])
+        val = int(x[1])
+        cr, val = map(int,[cr,val])
+        if matrc == "A" + str(i):
+            A_list[2*i + cr] = float(val)
+        if matrc == "B" + str(i):
+            B_list[2*i + cr] = float(val)
+
+sortByKey().map(lambda x: (x[0][0][0],x[1]))
+groupByKey().reduce(lambda x,y: np.dot(x,y))
+
+def mapper2(x):
+    A_list = {}
+    B_list = {}
+    for i in range(0,2):
+        matrc = x[0][0]
+        cr = int(x[0][1])
+        val = int(x[1])
+        index = 2*i + cr
+        if matrc == "A" + str(i):
+            A_list[str(index)] = val
+        if matrc == "B" + str(i):
+            B_list[str(index)] = val
+    return A_list,B_list
+
+
+def mapper2(x):
+    A_list = [0] * (2*2)
+    B_list = [0] * (2*2)
+    temp = max(2,2)
+    for i in range(0,2):
+        matrc = x[0][0]
+        cr = int(x[0][1])
+        val = int(x[1])
+        if matrc == "A" + str(i):
+            A_list[2*i + cr] = val
+        else:
+            B_list[2*i + cr] = val
+    return A_list,B_list
+
+def mapper2(x):
+    for i in range(0,2):
+        if x[0][0] == "A" + str(i):
+            A_list[2*i + int(x[0][1])] = int(x[1])
+        if x[0][0] == "B" + str(i):
+            B_list[2*i + int(x[0][1])] = int(x[1])
+    return A_list,B_list
+
+
+
+remember to sortByKey after first mapper!
+also if needed use sc.parallelize to transform pipeline into RDD!
+
+
+## IF YOU RUN IN SPARK:
+
+data = sc.textFile("file:////Users/laks/Desktop/Polytechnique/Cours/Database Management II (MAP543)/Project/Database-Management-Project-Big-Matrix-Multiplication/Augustin/matrix2.txt")
+pairs = data.map(lambda x: x.strip().split(','))
+
+
